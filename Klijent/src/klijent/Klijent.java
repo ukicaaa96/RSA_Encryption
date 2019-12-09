@@ -1,86 +1,147 @@
-package rsa_klijent;
+package klijent;
 
 import java.io.*;
 import java.net.*;
 import java.security.*;
+import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import ui.ThirdPanel;
 
 
 
-public class RSA_Klijent {
+public class Klijent {
+    String PATH = "E:\\Program\\KlijentFolder\\";
+    KeyPairGenerator keyGen;
+    KeyPair key ;
+    byte [] Mojkljuc ;
+    Socket s;
+    DataOutputStream dosKljuc ;
+    byte [] KljucByte ;
+    InputStream streamKljuc ;
+    PublicKey publicKey ;
+    FileOutputStream outKljuc ;
+    File file ;
+    byte[] fajlByte; 
+    FileInputStream fis;
+    Cipher cipher ;
+    byte[] cipherText ;
+    DataOutputStream dos ;
+    byte data[] ;
+    InputStream stream ;
+    ByteArrayOutputStream baos ;
+    byte[] cipherTextD;
+    FileOutputStream out ;
     
-    public static void main(String[] args) throws Exception{
-        
-        
-         String PATH = "C:/Users/meksa/Desktop/RazmenaFajlovaRSA/";
-         
-         
+    public Klijent () {}
+    public void generisanjePiJKljuca () throws NoSuchAlgorithmException {
         System.out.println( "Zapocinjem generisanje privatnog kljuca i javnog kljuca" );
-        KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
+        keyGen = KeyPairGenerator.getInstance("RSA");
         keyGen.initialize(2048);
-        KeyPair key = keyGen.generateKeyPair();
+        key = keyGen.generateKeyPair();
         System.out.println( "\nZavrseno generisanje Privatnog i javnog kljuca" );  
-        byte [] Mojkljuc = key.getPublic().getEncoded();
-    
-        Socket s = new Socket ("192.168.1.5" , 1612);
-    
-        ///////////////////////Salje kljuc///////////////////////////////////////////
+        Mojkljuc = key.getPublic().getEncoded();
         
-        DataOutputStream dosKljuc = new DataOutputStream(s.getOutputStream());
+    }
+    public void povezivanjeNaServer (String host,int port) throws IOException {
+        s = new Socket (host , port);
+        System.out.println("Povezan na server.");
+        
+    }
+    public void slanjeJKljuca () throws IOException {
+        dosKljuc = new DataOutputStream(s.getOutputStream());
         dosKljuc.write(Mojkljuc);
         dosKljuc.flush();
-        System.out.println("Klijent je poslao serveru Public Key");
-        
-        //////////////////////Prima kljuc///////////////////////////////////////////
-        
-        byte [] KljucByte = new byte[2048];
-        InputStream streamKljuc = s.getInputStream();
+        System.out.println("Klijent je poslao serveru PublicKey");
+    }
+    public void primanjeJKljuca () throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+        KljucByte = new byte[2048];
+        streamKljuc = s.getInputStream();
         streamKljuc.read(KljucByte);
-        PublicKey publicKey = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(KljucByte));
+        publicKey = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(KljucByte));
         
-        FileOutputStream outKljuc = new FileOutputStream(PATH+"KljucServer.key");
+        outKljuc = new FileOutputStream(PATH +"\\PubK\\"+"KljucServer.key");
         outKljuc.write(KljucByte);
         System.out.println("Klijent je primio PublicKey od servera i sacuvao ga u fajl");
-        
-        ////////////////////////////Salje Fajl///////////////////////////////////////
-        
-        File file = new File(PATH+"Klijent.txt");
-        byte[] fajlByte = new byte[245]; 
-        FileInputStream fis = new FileInputStream(file);
+    
+    }
+    public void slanjeFajla (String putanja) throws FileNotFoundException, IOException, InvalidKeyException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, NoSuchPaddingException {
+        file = new File(putanja);
+        fajlByte = new byte[245]; 
+        fis = new FileInputStream(file);
         fis.read(fajlByte); 
         fis.close();
         
-        Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+        cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
         cipher.init(Cipher.ENCRYPT_MODE, publicKey);
-        byte[] cipherText = cipher.doFinal(fajlByte);
+        cipherText = cipher.doFinal(fajlByte);
         
-        DataOutputStream dos = new DataOutputStream(s.getOutputStream());
+        dos = new DataOutputStream(s.getOutputStream());
         dos.write(cipherText);
         dos.flush();
         System.out.println("Klijent je poslao fajl serveru");
-        
-        /////////////////////////////Prima fajl//////////////////////////////////////
-        byte data[] = new byte[300];
-        InputStream stream = s.getInputStream();
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-	baos.write(data, 0 , stream.read(data));		
-	byte result[] = baos.toByteArray();
-        
-        
-        cipher.init(Cipher.DECRYPT_MODE, key.getPrivate());
-        byte[] cipherTextD = cipher.doFinal(result);
-        
-        FileOutputStream out = new FileOutputStream(PATH+"PrimljenoOdServera.txt");
-        out.write(cipherTextD);
-        System.out.println("Server je primio fajl od klijenta i sacuvao je taj fajl");
-        
+    }
+    public void primanjeFajla (String imeFajla) throws IOException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        try {
+            data = new byte[300];
+            stream = s.getInputStream();
+            baos = new ByteArrayOutputStream();
+            baos.write(data, 0 , stream.read(data));
+            byte result[] = baos.toByteArray();
+            
+            cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+            cipher.init(Cipher.DECRYPT_MODE, key.getPrivate());
+            cipherTextD = cipher.doFinal(result);
+            
+            out = new FileOutputStream(PATH+"PrimljeniFajlovi\\"+imeFajla);
+            out.write(cipherTextD);
+            System.out.println("Klijent je primio fajl od servera i sacuvao je taj fajl");
+        } catch (NoSuchAlgorithmException ex) {
+            Logger.getLogger(Klijent.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NoSuchPaddingException ex) {
+            Logger.getLogger(Klijent.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
-
-         
-
-    
+    }
+    public InputStream getInS () throws IOException {
+        return this.s.getInputStream();
+    }
+    public OutputStream getOuS () throws IOException {
+        return this.s.getOutputStream();
+    }
+    public void saljiUTF(String poruka) {
+        DataOutputStream out;
+        try {
+            out = new DataOutputStream(getOuS());
+            out.writeUTF(poruka);
+        } catch (IOException ex) {
+            Logger.getLogger(ThirdPanel.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    public String primiUTF() {
+        String porukaOdServera=null;
+        try {
+            DataInputStream in = new DataInputStream(new BufferedInputStream(getInS()));
+            porukaOdServera = in.readUTF();
+//            if(porukaOdServera.startsWith("MENI:")) {}
+//            else
+//                System.out.println(porukaOdServera);
+            }
+            catch (IOException ex) {
+                System.out.println("greska u soketu.");
+            }
+        return porukaOdServera;
+    }
+    public void discon () throws IOException {
+        s.close();
+    }
+    public String getPath() {
+        return this.PATH;
+    }   
 }
 
 
