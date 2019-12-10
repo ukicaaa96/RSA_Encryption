@@ -39,26 +39,31 @@ public class Klijent {
     FileOutputStream out ;
     
     public Klijent () {}
+    //metoda za generisanje privatnog i javnog kljuca
     public void generisanjePiJKljuca () throws NoSuchAlgorithmException {
-        System.out.println( "Zapocinjem generisanje privatnog kljuca i javnog kljuca" );
+        System.out.println( "Zapocinjem generisanje privatnog kljuca i javnog kljuca.." );
         keyGen = KeyPairGenerator.getInstance("RSA");
         keyGen.initialize(2048);
         key = keyGen.generateKeyPair();
-        System.out.println( "\nZavrseno generisanje Privatnog i javnog kljuca" );  
+        System.out.println( "Zavrseno generisanje privatnog i javnog kljuca!" );  
         Mojkljuc = key.getPublic().getEncoded();
+        byte [] Privantikljuc = key.getPrivate().getEncoded();
         
     }
+    //metoda za povezivanje na server
     public void povezivanjeNaServer (String host,int port) throws IOException {
         s = new Socket (host , port);
         System.out.println("Povezan na server.");
         
     }
+    //metoda za slanje javnog kljuca
     public void slanjeJKljuca () throws IOException {
         dosKljuc = new DataOutputStream(s.getOutputStream());
         dosKljuc.write(Mojkljuc);
         dosKljuc.flush();
-        System.out.println("Klijent je poslao serveru PublicKey");
+        System.out.println("Klijent je poslao serveru svoj PublicKey.");
     }
+    //metoda koju korisnik koristi za primanje javnog kljuca
     public void primanjeJKljuca () throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         KljucByte = new byte[2048];
         streamKljuc = s.getInputStream();
@@ -67,9 +72,10 @@ public class Klijent {
         
         outKljuc = new FileOutputStream(PATH +"\\PubK\\"+"KljucServer.key");
         outKljuc.write(KljucByte);
-        System.out.println("Klijent je primio PublicKey od servera i sacuvao ga u fajl");
+        System.out.println("Klijent je primio PublicKey od servera i sacuvao ga u fajl.");
     
     }
+    //metoda koja se koristi kada klijent salje fajl
     public void slanjeFajla (String putanja) throws FileNotFoundException, IOException, InvalidKeyException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, NoSuchPaddingException {
         file = new File(putanja);
         fajlByte = new byte[245]; 
@@ -84,8 +90,9 @@ public class Klijent {
         dos = new DataOutputStream(s.getOutputStream());
         dos.write(cipherText);
         dos.flush();
-        System.out.println("Klijent je poslao fajl serveru");
+        System.out.println("Klijent je poslao fajl serveru.");
     }
+    //metoda koja se koristi kada klijent ocekuje fajl od servera
     public void primanjeFajla (String imeFajla) throws IOException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         try {
             data = new byte[300];
@@ -100,19 +107,21 @@ public class Klijent {
             
             out = new FileOutputStream(PATH+"PrimljeniFajlovi\\"+imeFajla);
             out.write(cipherTextD);
-            System.out.println("Klijent je primio fajl od servera i sacuvao je taj fajl");
+            System.out.println("Klijent je primio fajl od servera i sacuvao je taj fajl.");
         } catch (NoSuchAlgorithmException ex) {
             Logger.getLogger(Klijent.class.getName()).log(Level.SEVERE, null, ex);
         } catch (NoSuchPaddingException ex) {
             Logger.getLogger(Klijent.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+    //metoda koja se koristi u drugim klasama u svrhu prenosa poruka koje nisu String
     public InputStream getInS () throws IOException {
         return this.s.getInputStream();
     }
     public OutputStream getOuS () throws IOException {
         return this.s.getOutputStream();
     }
+    //metoda za razmenu String poruka sa serverom
     public void saljiUTF(String poruka) {
         DataOutputStream out;
         try {
@@ -136,9 +145,12 @@ public class Klijent {
             }
         return porukaOdServera;
     }
+    //gasenje konekcije sa serverom
     public void discon () throws IOException {
         s.close();
+        System.out.println("Klijent prekida vezu.");
     }
+    //metoda za dobijanje putanje
     public String getPath() {
         return this.PATH;
     }   

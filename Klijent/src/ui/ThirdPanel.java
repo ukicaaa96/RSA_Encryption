@@ -39,9 +39,10 @@ public class ThirdPanel  extends JPanel {
     private JButton meniSendBtn;
     private JFileChooser fc;
     
-    
+    //najbitniji panel za RSA
     public ThirdPanel () {
         this.setLayout(new FlowLayout(FlowLayout.LEFT));
+        //ovaj panel nije vidljiv jer je aktivan nakon ponasanja prvog
         this.setVisible(false);
         meniBtn = new JButton("ZAHTEVAJ MENI");
         closeBtn = new JButton("ZATVORI KONEKCIJU");
@@ -52,14 +53,18 @@ public class ThirdPanel  extends JPanel {
         meniBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
+                //kada klijent salje String server ceka isti tip podataka i salje odgovor
                 klijent.saljiUTF("Zahtev za menijem");
                 String meni [] = klijent.primiUTF().split("MENI:")[1].split("\n");
+                //za dobijeni meni se kreiraju radio buttoni
                 for (int i=0;i<meni.length;i++) {
                     JRadioButton rb = new JRadioButton(meni[i]);
                     radioBtns.add(rb);
                 }
+                //meni i close buttoni nisu vidljivi zbog mesta za meni
                 meniBtn.setVisible(false);
                 closeBtn.setVisible(false);
+                //dodavanje opcije za slanje odabrane usluge iz menija
                 add(meniSendBtn,FlowLayout.RIGHT);
                 addRadioButtons();
 
@@ -69,6 +74,7 @@ public class ThirdPanel  extends JPanel {
         closeBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
+                //gasenje konekcije
                 klijent.saljiUTF("Zahtev za close");
                 String porukaOdServera = klijent.primiUTF();
                 if(porukaOdServera.equals("Exit")) {
@@ -82,15 +88,17 @@ public class ThirdPanel  extends JPanel {
             }
             
         });
+        //najbitnije dugme koje pokazuje funkcije za sifrovanu komunikaciju
         meniSendBtn.addActionListener(new ActionListener () {
             @Override
             public void actionPerformed(ActionEvent ae) {
+                //ovo je odabrana opcija iz menija
                 String komanda = radioGroup.getSelection().getActionCommand();
                 if(komanda.endsWith("javnim kljucem")) {
                     klijent.saljiUTF("1.Zahtev za novim javnim kljucem");
 //                    System.out.println(komanda);
                     try {
-                        
+                        //klijent ceka od servera javni kljuc
                         klijent.primanjeJKljuca();
                     } catch (IOException ex) {
                         Logger.getLogger(ThirdPanel.class.getName()).log(Level.SEVERE, null, ex);
@@ -113,6 +121,7 @@ public class ThirdPanel  extends JPanel {
                         String putanja = fc.getSelectedFile().getAbsolutePath();
                         klijent.saljiUTF("2.Slanje fajla_imeFajla:"+fc.getSelectedFile().getName());
                     try {
+                        //klijent salje fajl serveru(server ceka prijem fajla)
                         klijent.slanjeFajla(putanja);
                     } catch (IOException ex) {
                         Logger.getLogger(ThirdPanel.class.getName()).log(Level.SEVERE, null, ex);
@@ -144,6 +153,7 @@ public class ThirdPanel  extends JPanel {
 //                            klijent.primanjeFajla(imeFajla);
                         }
                         klijent.saljiUTF("3.Primanje fajla_SALJI");
+                        //klijent čeka fajl od servera
                         klijent.primanjeFajla(imeFajla2);
                         
                         
@@ -162,9 +172,9 @@ public class ThirdPanel  extends JPanel {
                     String porukaOdServera = klijent.primiUTF();
                     if(porukaOdServera.equals("Exit")) {
                     try {
+                        //gasenje konekcije sa serverom i exit
                         klijent.discon();
                     } catch (IOException ex) {
-                        Logger.getLogger(ThirdPanel.class.getName()).log(Level.SEVERE, null, ex);
                     }
                     System.exit(0);
                     }

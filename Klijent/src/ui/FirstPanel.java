@@ -31,6 +31,7 @@ public class FirstPanel extends JPanel {
     private Klijent klijent;
     private ThirdPanel thirdPanel;
     public FirstPanel () {
+        //layout koji se koristi u svim panelima
         this.setLayout(new FlowLayout(FlowLayout.LEFT));
         
         hostLabel = new JLabel("HOST");
@@ -39,6 +40,7 @@ public class FirstPanel extends JPanel {
         portField = new JTextField("1612");
         sendBtn = new JButton("POVEZI SE");
         
+        //slanje podataka iz unesenih formi
         sendBtn.addActionListener(new ActionListener () {
             @Override
             public void actionPerformed(ActionEvent ae){
@@ -59,7 +61,7 @@ public class FirstPanel extends JPanel {
             }
             
         });
-        
+        //dodavanji JComponents na prvi panel
         this.add(sendBtn,FlowLayout.LEFT);
         this.add(portField,FlowLayout.LEFT);
         this.add(portLabel,FlowLayout.LEFT);
@@ -67,7 +69,7 @@ public class FirstPanel extends JPanel {
         this.add(hostLabel,FlowLayout.LEFT);
         
     }
-
+    //kljucna metoda za setovanje klijenta koji je instanciran u mainframe i koji se koristi u drugim klasama
     public void setKlijent(Klijent klijent) {
         this.klijent = klijent;
     }

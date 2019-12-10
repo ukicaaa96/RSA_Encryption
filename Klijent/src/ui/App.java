@@ -22,7 +22,7 @@ public class App {
 
 	public static void main(String[] args) throws IOException {
             
-                
+                //efikasnije pokretanje GUI-a
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				new MainFrame();

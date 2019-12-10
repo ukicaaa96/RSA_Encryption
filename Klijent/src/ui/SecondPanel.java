@@ -34,10 +34,12 @@ public class SecondPanel extends JPanel{
         this.sendBtn = new JButton("RAZMENI KLJUCEVE");
         this.klijent = new Klijent();
         
+        //dugme za generisanje privatnog i javnog kljuca
         this.genBtn.addActionListener(new ActionListener () {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 try {
+                    //generisanjePiJKljuca
                     klijent.generisanjePiJKljuca();
                 } catch (NoSuchAlgorithmException ex) {
                     System.out.println("greska kod privatnog i javnog kljuca.");
@@ -47,9 +49,10 @@ public class SecondPanel extends JPanel{
         });
         this.sendBtn.addActionListener(new ActionListener () {
             @Override
-
+            
             public void actionPerformed(ActionEvent ae) {
                 try {
+                    //razmena kljuceva sa serverom
                     klijent.saljiUTF("Razmena");
                     klijent.slanjeJKljuca();
                     klijent.primanjeJKljuca();
@@ -70,7 +73,7 @@ public class SecondPanel extends JPanel{
         
                 
     }
-
+    //svaki panel ima ovu klasu,znaci postoji samo jedan klijent za jedan gui
     void setKlijent(Klijent klijent) {
         this.klijent = klijent;
     }
