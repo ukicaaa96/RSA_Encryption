@@ -1,4 +1,4 @@
-﻿package server;
+package server;
 
 import java.io.*;
 import java.net.*;
@@ -48,14 +48,16 @@ public class Server {
     DataOutputStream dos ;
     
     public Server () {}
+    //metoda za generisanje privatnog i javnog kljuca
     public void generisanjePiJKljuca () throws NoSuchAlgorithmException {
-        System.out.println( "Zapocinjem generisanje privatnog kljuca i javnog kljuca" );
+        System.out.println( "Zapocinjem generisanje privatnog kljuca i javnog kljuca.." );
         keyGen = KeyPairGenerator.getInstance("RSA"); 
         keyGen.initialize(2048);
         key = keyGen.generateKeyPair();
-        System.out.println( "\nZavrseno generisanje privatnog i javnog kljuca" );  
+        System.out.println( "Zavrseno generisanje privatnog i javnog kljuca!" );  
         MojKljuc = key.getPublic().getEncoded();
     }
+    //metoda za prihvatanje konekcija
     public void povezivanje () throws IOException {
         System.out.println("Server je pokrenut.");
         ss = new ServerSocket(1612);
@@ -64,12 +66,14 @@ public class Server {
         DataOutputStream out  = new DataOutputStream(s.getOutputStream()); 
 //        out.writeUTF("MENI:1.Zahtev za novim javnim ključem\n2.Slanje fajla\n3.Primanje fajla\n4.Gasenje konekcije.");
     }
+    //metoda za slanje javnog kljuca
     public void slanjeJKljuca () throws IOException, IOException {
         dosKljuc = new DataOutputStream(s.getOutputStream());
         dosKljuc.write(MojKljuc);
         dosKljuc.flush();
-        System.out.println("Server je poslao klijentu Public Key");
+        System.out.println("Server je poslao klijentu svoj PublicKey.");
     }
+    //metoda koju server koristi za primanje javnog kljuca
     public void primanjeJKljuca () throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         KljucByte = new byte[2048];
         streamKljuc = s.getInputStream();
@@ -78,8 +82,9 @@ public class Server {
         
         outKljuc = new FileOutputStream(PATH +"\\PubK\\"+"KljucKlijent.key");
         outKljuc.write(KljucByte);
-        System.out.println("Server je primio Public Key od klijenta i sacuvao ga u fajl");
+        System.out.println("Server je primio PublicKey od klijenta i sacuvao ga u fajl.");
     }
+    //metoda koja se koristi kada server salje fajl
     public void slanjeFajla (String putanja) throws FileNotFoundException, IOException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
 //        String odabranFajl = this.biranjeSlucajnogFajla();
         file = new File(putanja); 
@@ -87,15 +92,23 @@ public class Server {
         fis = new FileInputStream(file);
         fis.read(fajlByte); 
         fis.close();
+        
+        try {
+            cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+            cipher.init(Cipher.ENCRYPT_MODE, publicKey);
+            cipherTextE = cipher.doFinal(fajlByte);
+        }
+        catch (Exception e) {
+            System.out.println(e.getMessage());
 
-        cipher.init(Cipher.ENCRYPT_MODE, publicKey);
-        cipherTextE = cipher.doFinal(fajlByte);
-
+        }
+        
         dos = new DataOutputStream(s.getOutputStream());
         dos.write(cipherTextE);
         dos.flush();
-        System.out.println("Server je poslao fajl klijentu");
+        System.out.println("Server je poslao fajl klijentu.");
     }
+    //metoda koja se koristi kada server ocekuje fajl od klijenta
     public void primanjeFajla (String imeFajla) throws FileNotFoundException, IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         data = new byte[300];
         stream = s.getInputStream();
@@ -109,7 +122,7 @@ public class Server {
         
         FileOutputStream out = new FileOutputStream(PATH+"PrimljeniFajlovi\\"+imeFajla);
         out.write(cipherText);
-        System.out.println("Server je primio fajl od klijenta i sacuvao je taj fajl");
+        System.out.println("Server je primio fajl od klijenta i sacuvao je taj fajl.");
         out.close();
     }
     
@@ -120,6 +133,7 @@ public class Server {
     public OutputStream getOuS () throws IOException {
         return this.s.getOutputStream();
     }
+    //laksa komunikacija sa klijentom
     public void saljiUTF(String poruka) {
         DataOutputStream out;
         try {
@@ -132,6 +146,7 @@ public class Server {
     public String getPath() {
         return this.PATH;
     }
+    //biranje slucajnog fajla
     public String biranjeSlucajnogFajla () {
         File f = new File(PATH); // current directory
             ArrayList <String> fajlovi = new ArrayList <String>();
