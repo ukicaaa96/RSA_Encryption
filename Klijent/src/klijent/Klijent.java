@@ -11,12 +11,12 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
-import ui.ThirdPanel;
+//import ui.ThirdPanel;
 
 
 
 public class Klijent {
-    String PATH = "E:\\Program\\KlijentFolder\\";
+    String PATH = "E:\\Program2\\Program\\KlijentFolder\\";
     KeyPairGenerator keyGen;
     KeyPair key ;
     byte [] Mojkljuc ;
@@ -37,15 +37,19 @@ public class Klijent {
     ByteArrayOutputStream baos ;
     byte[] cipherTextD;
     FileOutputStream out ;
+    DataInputStream in;
+    DataOutputStream out2;
+    boolean primljenPk = false;
+    boolean generisanPPk = false;
     
     public Klijent () {}
     //metoda za generisanje privatnog i javnog kljuca
     public void generisanjePiJKljuca () throws NoSuchAlgorithmException {
-        System.out.println( "Zapocinjem generisanje privatnog kljuca i javnog kljuca.." );
+//        System.out.println( "Zapocinjem generisanje privatnog kljuca i javnog kljuca.." );
         keyGen = KeyPairGenerator.getInstance("RSA");
         keyGen.initialize(2048);
         key = keyGen.generateKeyPair();
-        System.out.println( "Zavrseno generisanje privatnog i javnog kljuca!" );  
+//        System.out.println( "Zavrseno generisanje privatnog i javnog kljuca!" );  
         Mojkljuc = key.getPublic().getEncoded();
         byte [] Privantikljuc = key.getPrivate().getEncoded();
         
@@ -53,7 +57,6 @@ public class Klijent {
     //metoda za povezivanje na server
     public void povezivanjeNaServer (String host,int port) throws IOException {
         s = new Socket (host , port);
-        System.out.println("Povezan na server.");
         
     }
     //metoda za slanje javnog kljuca
@@ -61,7 +64,7 @@ public class Klijent {
         dosKljuc = new DataOutputStream(s.getOutputStream());
         dosKljuc.write(Mojkljuc);
         dosKljuc.flush();
-        System.out.println("Klijent je poslao serveru svoj PublicKey.");
+//        System.out.println("Klijent je poslao serveru svoj PublicKey.");
     }
     //metoda koju korisnik koristi za primanje javnog kljuca
     public void primanjeJKljuca () throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
@@ -72,7 +75,7 @@ public class Klijent {
         
         outKljuc = new FileOutputStream(PATH +"\\PubK\\"+"KljucServer.key");
         outKljuc.write(KljucByte);
-        System.out.println("Klijent je primio PublicKey od servera i sacuvao ga u fajl.");
+//        System.out.println("Klijent je primio PublicKey od servera i sacuvao ga u fajl.");
     
     }
     //metoda koja se koristi kada klijent salje fajl
@@ -90,7 +93,7 @@ public class Klijent {
         dos = new DataOutputStream(s.getOutputStream());
         dos.write(cipherText);
         dos.flush();
-        System.out.println("Klijent je poslao fajl serveru.");
+//        System.out.println("Klijent je poslao fajl serveru.");
     }
     //metoda koja se koristi kada klijent ocekuje fajl od servera
     public void primanjeFajla (String imeFajla) throws IOException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
@@ -107,7 +110,7 @@ public class Klijent {
             
             out = new FileOutputStream(PATH+"PrimljeniFajlovi\\"+imeFajla);
             out.write(cipherTextD);
-            System.out.println("Klijent je primio fajl od servera i sacuvao je taj fajl.");
+//            System.out.println("Klijent je primio fajl od servera i sacuvao je taj fajl.");
         } catch (NoSuchAlgorithmException ex) {
             Logger.getLogger(Klijent.class.getName()).log(Level.SEVERE, null, ex);
         } catch (NoSuchPaddingException ex) {
@@ -123,19 +126,20 @@ public class Klijent {
     }
     //metoda za razmenu String poruka sa serverom
     public void saljiUTF(String poruka) {
-        DataOutputStream out;
+        
         try {
-            out = new DataOutputStream(getOuS());
-            out.writeUTF(poruka);
+            out2 = new DataOutputStream(getOuS());
+            out2.writeUTF(poruka);
         } catch (IOException ex) {
-            Logger.getLogger(ThirdPanel.class.getName()).log(Level.SEVERE, null, ex);
+//            Logger.getLogger(ThirdPanel.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     public String primiUTF() {
         String porukaOdServera=null;
         try {
-            DataInputStream in = new DataInputStream(new BufferedInputStream(getInS()));
+            in = new DataInputStream(new BufferedInputStream(getInS()));
             porukaOdServera = in.readUTF();
+//            System.out.println(porukaOdServera);
 //            if(porukaOdServera.startsWith("MENI:")) {}
 //            else
 //                System.out.println(porukaOdServera);
@@ -148,12 +152,39 @@ public class Klijent {
     //gasenje konekcije sa serverom
     public void discon () throws IOException {
         s.close();
-        System.out.println("Klijent prekida vezu.");
+//        System.out.println("Klijent prekida vezu.");
     }
     //metoda za dobijanje putanje
     public String getPath() {
         return this.PATH;
     }   
+    public void zatvaranje() throws IOException {
+        discon();
+        out2.close();
+//        in.close();s
+//        out2 = null;
+//        in = null;
+        
+        
+    }
+
+    public boolean isPrimljenPk() {
+        return this.primljenPk;
+    }
+
+    public void setPrimljenPk(boolean primljenPk) {
+        this.primljenPk = primljenPk;
+    }
+
+    public boolean isGenerisanPPk() {
+        return generisanPPk;
+    }
+
+    public void setGenerisanPPk(boolean generisanPPk) {
+        this.generisanPPk = generisanPPk;
+    }
+    
+    
 }
 
 
