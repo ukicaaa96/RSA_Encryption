@@ -45,6 +45,7 @@ Zaobićićemo deo sa listenerima i ostalim delom(dodavanje na ekran,veličina ek
 
 Nakon unosa:
 ![](https://i.postimg.cc/fTFFFy3v/hp.png)  
+
 poželjno je da se proveri da li je server aktivan(*Klijent/src/ui/ServerStatusPanel.java*):
 ```java
 klijent.povezivanjeNaServer(host, port);
@@ -74,8 +75,10 @@ u notifPanelu korisnik saznaje tu informaciju:
 notifListener.proslediPoruku("Server funkcioniše.");
 ```
 ![](https://i.postimg.cc/52VG1G3H/ob.png)  
+  
 Klikom na:
 ![](https://i.postimg.cc/y6rs1VgD/meni.png)  
+
 ```java
 zahtevButton.addActionListener(new ActionListener () {
     @Override
@@ -91,6 +94,7 @@ zahtevButton.addActionListener(new ActionListener () {
 
 klijent dobija(ukoliko je Server aktivan) meni sa opcijama:
 ![](https://i.postimg.cc/fLLpp9vB/meni2.png)  
+
 ```java
 menuListener.proslediMeni(poruka);
 klijent.zatvaranje();
@@ -132,8 +136,10 @@ Ostatak ove metode objašnjavamo posle.
 
 Klijent bira jednu od opcija:
 ![](https://i.postimg.cc/fyYGfhCN/prim3.png)  
+  
 i pojavljuje se obaveštenje:
 ![](https://i.postimg.cc/HsgDsVWs/errorpk.png)  
+  
 Zbog toga postoji promenljiva (*Klijent/src/klijent/Klijent.java*) kojom saznajemo da li je klijent primio javni ključ od servera.
 ```java
 boolean primljenPk = false;
@@ -149,6 +155,7 @@ public boolean isPrimljenPk() {
 ```
 Zbog toga je neophodno da se najpre generiše Public i Private key:
 ![](https://i.postimg.cc/L6NCKXnW/gen.png)  
+
 ```java
 genBtn.addActionListener(new ActionListener () {
     @Override
@@ -180,6 +187,7 @@ public void generisanjePiJKljuca () throws NoSuchAlgorithmException {
 ```
 Zatim sledi razmena:
 ![](https://i.postimg.cc/hj8F9Bpq/razmena2.png)  
+
 ```java
 razmenaBtn.addActionListener(new ActionListener () {
     @Override
@@ -210,6 +218,7 @@ razmenaBtn.addActionListener(new ActionListener () {
 ```
 Ukoliko korisnik želi da pošalje fajl:
 ![](https://i.postimg.cc/KcNSjm1P/slanjefajla.png)  
+
 ```java
 if(mBtns.get(i).getText().equals("2.Slanje fajla")) {
       JButton btn = mBtns.get(i);
@@ -245,6 +254,7 @@ if(mBtns.get(i).getText().equals("2.Slanje fajla")) {
 ```
 Ukoliko želi da primi fajl:
 ![](https://i.postimg.cc/fyYGfhCN/prim3.png)  
+
 ```java
 if(mBtns.get(i).getText().equals("3.Primanje fajla")) {
   mBtns.get(i).addActionListener(new ActionListener () {
