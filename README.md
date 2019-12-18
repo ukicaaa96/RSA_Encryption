@@ -49,12 +49,17 @@ Nakon unosa:
 
 poželjno je da se proveri da li je server aktivan(*Klijent/src/ui/ServerStatusPanel.java*):
 ```java
-//dobijanje informacija o hostu i portu(ova linija će se više puta vidjati)
-String host = hostField.getText();
-int port = Integer.parseInt(portField.getText());
-klijent.povezivanjeNaServer(host, port);
-klijent.saljiUTF("Provera");
-klijent.zatvaranje();
+proveraButton.addActionListener(new ActionListener () {
+    @Override
+    public void actionPerformed(ActionEvent ae) {
+        //dobijanje informacija o hostu i portu(ova linija će se više puta vidjati)
+        String host = hostField.getText();
+        int port = Integer.parseInt(portField.getText());
+        klijent.povezivanjeNaServer(host, port);
+        klijent.saljiUTF("Provera");
+        klijent.zatvaranje();
+    }
+}
 ```
 tj.(*Klijent/src/klijent/Klijent.java*)
 ```java
@@ -368,7 +373,8 @@ if(mBtns.get(i).getText().equals("1.Zahtev za novim javnim kljucem")) {
                   });
               }
 ```
-Primanje javnog ključa klijent.primanjeJKljuca() je opisano ranije.
+Primanje javnog ključa klijent.primanjeJKljuca() je opisano ranije.  
+
 **Serverska strana**
 Server pokreće Server/src/server/TestServer.java .
 ```java
