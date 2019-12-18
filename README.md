@@ -80,7 +80,7 @@ public void saljiUTF(String poruka) {
         }
     }
 ```
-u notifPanelu korisnik saznaje tu informaciju:  
+u notifPanelu korisnik(*Klijent/src/ui/NotifPanel.java*) saznaje tu informaciju:  
 
 ```java
 notifListener.proslediPoruku("Server funkcioniše.");
@@ -104,7 +104,7 @@ zahtevButton.addActionListener(new ActionListener () {
             poruka = klijent.primiUTF();
 ```
 
-klijent dobija(ukoliko je Server aktivan) meni sa opcijama:  
+klijent dobija(ukoliko je Server aktivan) meni sa opcijama(*Klijent/src/ui/MenuPanel.java*):  
 
 ![](https://i.postimg.cc/fLLpp9vB/meni2.png)  
 
@@ -168,7 +168,7 @@ public boolean isPrimljenPk() {
         this.primljenPk = primljenPk;
     }
 ```
-Zbog toga je neophodno da se najpre generiše Public i Private key:
+Zbog toga je neophodno da se najpre generiše Public i Private key(*Klijent/src/klijent/Klijent.java*):
 ![](https://i.postimg.cc/L6NCKXnW/gen.png)  
 
 ```java
@@ -179,6 +179,7 @@ genBtn.addActionListener(new ActionListener () {
             klijent.generisanjePiJKljuca();
             klijent.setGenerisanPPk(true);
         } catch (NoSuchAlgorithmException ex) {
+			notifListener.proslediPoruku("Nepostojeci algoritam");
         }
         notifListener.proslediPoruku("Zavrseno generisanje privatnog i javnog kljuca!");
 
@@ -375,7 +376,8 @@ if(mBtns.get(i).getText().equals("1.Zahtev za novim javnim kljucem")) {
 ```
 Primanje javnog ključa klijent.primanjeJKljuca() je opisano ranije.  
 
-**Serverska strana**
+**Serverska strana**  
+
 Server pokreće Server/src/server/TestServer.java .
 ```java
 public static void main(String[] args) {
