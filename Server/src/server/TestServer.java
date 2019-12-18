@@ -36,7 +36,6 @@ public class TestServer {
         String putanja = null;
         Server server = new Server();
         int brojacZaKljuc = 0;
-        int provera = 0;
         while(true) {
             server.povezivanje();
             System.out.println("--------------------------------------\n");

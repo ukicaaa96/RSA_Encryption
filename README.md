@@ -350,5 +350,254 @@ if(mBtns.get(i).getText().equals("3.Primanje fajla")) {
                   klijent.zatvaranje();
                   notifListener.proslediPoruku("Klijent je primio fajl od servera.");
 ```
-[Home](https://bitbucket.org/mruros1/sifrovanje-javnim-kljucem-sk/src/master/#markdown-header-aplikacija-za-razmenu-fajlova)
+Ukoliko želi novi javni ključ:
+![](https://i.postimg.cc/ZnprYJPX/zahtevnovi.png)  
+
+```java
+if(mBtns.get(i).getText().equals("1.Zahtev za novim javnim kljucem")) {
+  mBtns.get(i).addActionListener(new ActionListener () {
+      @Override
+      public void actionPerformed(ActionEvent ae) {
+          hostPortListener.proslediHP();
+          klijent.saljiUTF("1.Zahtev za novim javnim kljucem");
+          try {
+              klijent.primanjeJKljuca();
+              notifListener.proslediPoruku("Klijent je primio novi javni kljuc.");
+              klijent.setPrimljenPk(true);
+                          } catch (IOException e...
+                  });
+              }
+```
+Primanje javnog ključa klijent.primanjeJKljuca() je opisano ranije.
 **Serverska strana**
+Server pokreće Server/src/server/TestServer.java .
+```java
+public static void main(String[] args) {
+    //putanja do fajla koji server šalje
+    String putanja = null;
+    //najbitnija promenljiva u kojoj se nalaze sve metode za komunikaciju sa klijentom
+    Server server = new Server();
+    //brojac za proveru(generisanje javnog i privatnog ključa servera)
+    int brojacZaKljuc = 0;
+}
+```
+U while petlji server se za svaki zahtev povezuje i zatvara
+```java
+while(true) {
+    server.povezivanje();
+    System.out.println("--------------------------------------\n");
+    if(brojacZaKljuc == 0) {
+        brojacZaKljuc++;
+        //server najpre mora generisati svoje ključeve pre nego što krene da radi
+        server.generisanjePiJKljuca();
+    }
+    //poruke zahteva
+    ...
+    //zatvaranje konekcije
+     server.zatvaranje();
+    System.out.println("server je zatvoren.");
+    System.out.println("--------------------------------------\n");
+```
+metoda server.povezivanje();
+```java
+public void povezivanje () throws IOException {
+        //System.out.println("Server je pokrenut.");
+        ss = new ServerSocket(1612);
+        s = ss.accept();
+        //System.out.println("Klijent je povezan!");
+        DataOutputStream out  = new DataOutputStream(s.getOutputStream()); 
+        //out se koristi za slanje stringova i ostalih tipova podataka
+    }
+```
+metoda server.generisanjePiJKljuca();
+```java
+//metoda za generisanje privatnog i javnog kljuca
+    public void generisanjePiJKljuca () throws NoSuchAlgorithmException {
+        System.out.println( "Zapocinjem generisanje privatnog kljuca i javnog kljuca.." );
+        keyGen = KeyPairGenerator.getInstance("RSA"); 
+        //veličina ključa
+        keyGen.initialize(2048);
+        key = keyGen.generateKeyPair();
+        System.out.println( "Zavrseno generisanje privatnog i javnog kljuca!" );  
+        //public key koji će posle biti poslat klijentu
+        MojKljuc = key.getPublic().getEncoded();
+    }
+```
+Kada se klijent poveže ispisuje se poruka i postavlja se in promenljiva koja se koristi za primanje poruka
+```java
+System.out.println("Klijent je povezan.");
+DataInputStream in = new DataInputStream(new BufferedInputStream(server.getInputStream()));
+//bilo koji zahtev klijenta je string
+String porukaOdKlijenta = in.readUTF();
+```
+Klijent neće dobiti nikakvu povratnu poruku tokom provere jer zna da je povezan(*java.net.Socket* bi ga obavestio da server ne radi)
+```java
+if(porukaOdKlijenta.equals("Provera")) {
+    System.out.println("Klijent je prisutan.");
+}
+```
+Server odgovara na zahtev za meni
+```java
+if(porukaOdKlijenta.equals("Zahtev za meni")) {
+    server.saljiUTF("MENI:1.Zahtev za novim javnim kljucem\n2.Slanje fajla\n3.Primanje fajla");
+    System.out.println("Server je poslao meni klijentu.");
+}
+```
+metoda server.saljiUTF();
+```java
+//laksa komunikacija sa klijentom
+    public void saljiUTF(String poruka) {
+        DataOutputStream out;
+        try {
+            out = new DataOutputStream(getOuS());
+            out.writeUTF(poruka);
+        } catch (IOException ex) {
+            System.out.println("greska pri unosu");
+        }
+    }
+```
+Server prima javni ključ od klijenta
+```java
+if(porukaOdKlijenta.equals("Primanje javnog kljuca")) {
+    server.primanjeJKljuca();
+}
+```
+metoda server.primanjeJKljuca();
+```java
+//metoda koju server koristi za primanje javnog kljuca
+public void primanjeJKljuca () throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+    KljucByte = new byte[2048];
+    //promenljiva koja se koristi za primanje svih poruka
+    streamKljuc = s.getInputStream();
+    PrimljenKljuc = streamKljuc.read(KljucByte);
+    publicKey = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(KljucByte));
+    
+    outKljuc = new FileOutputStream(PATH +"PubK\\"+"KljucKlijent.key");
+    outKljuc.write(KljucByte);
+    System.out.println("Server je primio PublicKey od klijenta i sacuvao ga u fajl.");
+}
+```
+Server šalje javni ključ
+```java
+if(porukaOdKlijenta.equals("Slanje javnog kljuca")) {
+    Thread.sleep(200);
+    server.slanjeJKljuca();
+}
+```
+metoda server.slanjeJKljuca();
+```java
+public void slanjeJKljuca () throws IOException, IOException {
+    dosKljuc = new DataOutputStream(s.getOutputStream());
+    //pre toga je javni ključ generisan
+    dosKljuc.write(MojKljuc);
+    dosKljuc.flush();
+    System.out.println("Server je poslao klijentu svoj PublicKey.");
+}
+```
+Prva usluga iz menija
+```java
+if(porukaOdKlijenta.equals("1.Zahtev za novim javnim kljucem")) {
+    server.generisanjePiJKljuca();
+    //neophodan je Thread jer klijent mora imati postavljen getIn()
+    Thread.sleep(150);
+    server.slanjeJKljuca();
+}
+```
+Ove metode su već opisane.
+Odgovor na zahtev za slanjem fajla od Klijenta
+```java
+if (porukaOdKlijenta.startsWith("2.Slanje fajla")) {
+    try {
+        if(porukaOdKlijenta.equals("2.Slanje fajla")) {
+        //server pita za ime fajla,da bi znao da u svom folderu pravilno imenuje
+        server.saljiUTF("2.Ime fajla?");
+//                            server.primanjeFajla();
+        }
+        if(porukaOdKlijenta.startsWith("2.Slanje fajla_imeFajla:")) {
+            String imeFajla = porukaOdKlijenta.split(":")[1];
+            //server ceka na fajl
+            server.primanjeFajla(imeFajla);
+//                            server.primanjeFajla();
+        }
+        
+    } catch (Exception e) {
+        System.out.println(e.getMessage());
+    }
+}
+```
+metoda server.primanjeFajla(imeFajla);
+```java
+//metoda koja se koristi kada server ocekuje fajl od klijenta
+    public void primanjeFajla (String imeFajla) throws FileNotF.. {
+        data = new byte[300];
+        stream = s.getInputStream();
+        baos = new ByteArrayOutputStream();
+        //u nizu su pročitani bajtovi sa inputStream()
+        baos.write(data, 0 , stream.read(data));		
+        result = baos.toByteArray();
+        
+        cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+        //dekriptovanje
+        cipher.init(Cipher.DECRYPT_MODE, key.getPrivate());
+        cipherText = cipher.doFinal(result);
+        
+        FileOutputStream out = new FileOutputStream(PATH+"PrimljeniFajlovi\\"+imeFajla);
+        //originalan fajl od klijenta
+        out.write(cipherText);
+        System.out.println("Server je primio fajl od klijenta i sacuvao je taj fajl.");
+        out.close();
+    }
+```
+Odgovor na zahtev za slanje fajla ka Klijentu:
+```java
+if(porukaOdKlijenta.startsWith("3.Primanje fajla")) {
+    if(porukaOdKlijenta.equals("3.Primanje fajla")) {
+            //server bira fajl
+            putanja = server.biranjeSlucajnogFajla();
+            System.out.println(putanja);
+            String[] imeFajla = putanja.split("\\\\");
+            //server salje ime fajla klijentu radi bolje organizacije na njegovom folderu
+            server.saljiUTF("3.Primanje fajla_imeFajla:"+imeFajla[imeFajla.length-1]);
+            System.out.println(imeFajla[imeFajla.length-1]);
+        }
+    if(porukaOdKlijenta.equals("3.Primanje fajla_SALJI")) {
+            Thread.sleep(1500);
+            //metoda za slanje fajla klijentu
+            server.slanjeFajla(putanja);
+            
+    //                        server.slanjeFajla(putanja);
+    //                        provera = 0;
+        }
+}
+```
+Metoda server.slanjeFajla(putanja);
+```java
+//metoda koja se koristi kada server salje fajl
+public void slanjeFajla (String putanja) throws FileNotFoundEx.. {
+//        String odabranFajl = this.biranjeSlucajnogFajla();
+    //stavljanje u fajlByte 
+    file = new File(putanja); 
+    fajlByte = new byte[245]; 
+    fis = new FileInputStream(file);
+    fis.read(fajlByte); 
+    fis.close();
+        
+        try {
+            //enkripcija
+            cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+            cipher.init(Cipher.ENCRYPT_MODE, publicKey);
+            cipherTextE = cipher.doFinal(fajlByte);
+        }
+        catch (Exception e) {
+            System.out.println(e.getMessage());
+
+        }
+        
+        dos = new DataOutputStream(s.getOutputStream());
+        dos.write(cipherTextE);
+        dos.flush();
+        System.out.println("Server je poslao fajl klijentu.");
+    }
+```
+
+[Home](https://bitbucket.org/mruros1/sifrovanje-javnim-kljucem-sk/src/master/#markdown-header-aplikacija-za-razmenu-fajlova)
